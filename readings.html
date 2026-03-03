@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Readings - Divyakiran Sahoo</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- RESET & BASE --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: none;
+        }
+
+        body {
+            background-color: #050505;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(255,255,255,0.08) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(255,255,255,0.06) 0%, transparent 20%),
+                radial-gradient(circle at 50% 80%, rgba(255,255,255,0.09) 0%, transparent 30%),
+                radial-gradient(circle at 60% 10%, rgba(255,255,255,0.05) 0%, transparent 20%);
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden; 
+        }
+
+        /* Custom Scrollbar */
+        body::-webkit-scrollbar { width: 8px; }
+        body::-webkit-scrollbar-track { background: transparent; }
+        body::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        body::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+
+        /* --- CUSTOM CURSOR --- */
+        #custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            transition: transform 0.1s, width 0.2s, height 0.2s;
+        }
+        #custom-cursor.hovered { width: 50px; height: 50px; }
+        #custom-cursor.clicked { transform: translate(-50%, -50%) scale(0.8); }
+
+        /* --- THEMATIC LOADER --- */
+        #readings-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s ease-out;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Flipping Book Animation */
+        .book-loader {
+            position: relative;
+            width: 64px;
+            height: 44px;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            background: transparent;
+        }
+
+        .book-loader::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: -2px;
+            bottom: -2px;
+            width: 2px;
+            background: #fff;
+            transform: translateX(-50%);
+        }
+
+        .book-page {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 30px;
+            height: 40px;
+            background: #fff;
+            transform-origin: left center;
+            animation: flipPage 1.2s infinite linear;
+            border-radius: 0 2px 2px 0;
+        }
+
+        @keyframes flipPage {
+            0% { transform: perspective(200px) rotateY(0deg); background-color: #fff; }
+            50% { transform: perspective(200px) rotateY(-90deg); background-color: #666; }
+            100% { transform: perspective(200px) rotateY(-180deg); background-color: #fff; }
+        }
+
+        .loader-text {
+            font-size: 1.1rem;
+            letter-spacing: 4px;
+            color: #fff;
+            animation: pulseText 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulseText {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* Container to hold content and handle fade-in */
+        #content-wrapper {
+            opacity: 0;
+            transition: opacity 0.8s ease-in;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        #content-wrapper.visible {
+            opacity: 1;
+        }
+
+        /* --- HEADER NAV --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 50px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(5, 5, 5, 0.3); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        #esc-button {
+            width: 50px;
+            height: 50px;
+            background-color: #000000;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #ffffff; 
+            font-size: 0.8rem;
+            transition: transform 0.2s ease, background-color 0.2s;
+        }
+
+        #esc-button:hover { transform: scale(1.1); background-color: #222; }
+
+        .top-nav {
+            display: flex;
+            gap: 25px;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            align-items: center;
+        }
+
+        .top-nav a { color: #ccc; text-decoration: none; transition: color 0.3s; display: flex; align-items: center; }
+        .top-nav a:hover, .top-nav a.active { color: #fff; }
+
+        .shortcut-hint {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.65rem;
+            opacity: 0.6;
+            margin-left: 8px;
+            border: 1px solid #666;
+            padding: 2px 5px;
+            border-radius: 4px;
+            transition: border-color 0.3s, opacity 0.3s;
+        }
+        .top-nav a:hover .shortcut-hint { border-color: #fff; opacity: 1; }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 50px 50px 50px; 
+        }
+
+        .main-title {
+            font-family: 'Allura', cursive;
+            font-size: 5.5rem; 
+            font-weight: 400; 
+            letter-spacing: 2px; 
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        /* --- CARDS & CASCADING ANIMATION --- */
+        .cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 1100px;
+            padding-bottom: 30px;
+        }
+
+        @keyframes bookCascade {
+            0% { opacity: 0; transform: translateY(40px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .reading-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+            
+            /* Initial state for animation */
+            opacity: 0;
+            transform: translateY(40px) scale(0.98);
+        }
+
+        /* Trigger animations only after the wrapper is visible */
+        #content-wrapper.visible .reading-card {
+            animation: bookCascade 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        /* Hover effect applied after animation */
+        .reading-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px) !important;
+        }
+
+        /* Staggered Delays for each card */
+        #content-wrapper.visible .reading-card:nth-child(1) { animation-delay: 0.1s; }
+        #content-wrapper.visible .reading-card:nth-child(2) { animation-delay: 0.25s; }
+        #content-wrapper.visible .reading-card:nth-child(3) { animation-delay: 0.4s; }
+        #content-wrapper.visible .reading-card:nth-child(4) { animation-delay: 0.55s; }
+        #content-wrapper.visible .reading-card:nth-child(5) { animation-delay: 0.7s; }
+        #content-wrapper.visible .reading-card:nth-child(6) { animation-delay: 0.85s; }
+
+        .card-left { flex: 0 0 35%; }
+
+        .book-title-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 8px;
+        }
+
+        .book-title-group svg { width: 32px; height: 32px; fill: #fff; }
+        .book-title { font-size: 2rem; font-weight: bold; }
+        .book-author { color: #aaa; font-size: 1rem; padding-left: 47px; }
+
+        .card-right {
+            flex: 0 0 60%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #ddd;
+        }
+
+        .info-row { display: flex; align-items: flex-start; gap: 10px; }
+        .info-icon { width: 16px; height: 16px; fill: #aaa; margin-top: 3px; flex-shrink: 0; }
+        .info-label { font-weight: bold; color: #fff; letter-spacing: 0.5px; }
+
+        /* --- FOOTER --- */
+        footer {
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: #000;
+            font-size: 0.85rem;
+            margin-top: auto; 
+            
+            opacity: 0;
+        }
+
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        #content-wrapper.visible footer {
+            animation: fadeIn 1s ease-out 1s forwards; 
+        }
+
+        .footer-contacts { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .contact-link { color: #ccc; text-decoration: none; transition: color 0.3s; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; }
+        .contact-link:hover { color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+        .contact-link svg { width: 18px; height: 18px; fill: #ccc; transition: fill 0.3s, transform 0.2s; }
+        .contact-link:hover svg { fill: #fff; transform: scale(1.1); }
+        .separator { color: #555; font-weight: lighter; }
+        .copyright { color: #777; font-size: 0.8rem; }
+
+        /* --- MOBILE OPTIMIZATIONS --- */
+        @media (max-width: 1000px) {
+            .reading-card { flex-direction: column; align-items: flex-start; gap: 20px; }
+            .book-author { padding-left: 0; }
+            .main-title { font-size: 4rem; margin-bottom: 20px; text-align: center; }
+            footer { flex-direction: column; gap: 15px; justify-content: center; align-items: center; text-align: center; }
+            .separator { display: none; }
+            .footer-contacts { gap: 10px; flex-direction: column; align-items: center; }
+            header { padding: 20px; flex-direction: column; gap: 20px; align-items: center; }
+            .top-nav { flex-wrap: wrap; justify-content: center; width: 100%; }
+            #esc-button { display: none !important; } /* Hidden entirely on mobile */
+        }
+        
+        @media (max-width: 600px) {
+            .main-title { font-size: 3rem; margin-top: 20px; }
+            .book-title { font-size: 1.5rem; }
+            .reading-card { padding: 20px; }
+            main { padding: 20px; }
+        }
+
+        /* --- TOUCH DEVICE CURSOR FIX --- */
+        @media (hover: none) and (pointer: coarse) {
+            * { cursor: auto !important; }
+            #custom-cursor { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <div id="readings-loader">
+        <div class="book-loader">
+            <div class="book-page"></div>
+        </div>
+        <div class="loader-text">CURATING BOOKSHELF...</div>
+    </div>
+
+    <div id="content-wrapper">
+        <header>
+            <div id="esc-button" class="interactive" title="Go Back to Home (Esc)">ESC</div>
+            <nav class="top-nav">
+                <a href="#" id="nav-home" class="interactive">HOME <span class="shortcut-hint">⌘H</span></a>
+                <a href="#" id="nav-about" class="interactive">ABOUT <span class="shortcut-hint">⌘I</span></a>
+                <a href="#" class="active interactive">READINGS</a>
+            </nav>
+        </header>
+
+        <main>
+            <h1 class="main-title">Divyakiran Sahoo</h1>
+
+            <div class="cards-container">
+                
+                <div class="reading-card interactive">
+                    <div class="card-left">
+                        <div class="book-title-group">
+                            <svg viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C15.48 8.92 14.28 7.55 14.53 5.37C14.56 5.11 14.41 4.88 14.18 4.79C13.95 4.7 13.68 4.76 13.51 4.93C11.52 6.94 10.5 9.77 11.16 12.5C11.23 12.8 11.05 13.1 10.75 13.17C10.45 13.25 10.15 13.06 10.07 12.76C9.69 11.24 9.94 9.61 10.73 8.27C10.87 8.03 10.83 7.73 10.63 7.55C10.43 7.37 10.13 7.35 9.91 7.5C8.07 8.78 6.9 10.84 6.9 13.06C6.9 16.88 10.02 20 13.84 20C17.66 20 20.78 16.88 20.78 13.06C20.78 12.39 20.67 11.75 20.47 11.12C20.39 10.86 20.08 10.72 19.82 10.81C19.56 10.89 19.42 11.2 19.5 11.46C19.66 11.96 19.74 12.5 19.74 13.06C19.74 16.3 17.09 18.96 13.84 18.96C10.59 18.96 7.94 16.3 7.94 13.06C7.94 11.28 8.84 9.61 10.3 8.63C9.68 10.32 9.71 12.22 10.46 13.85C10.77 14.51 11.42 14.93 12.16 14.96C12.91 14.99 13.6 14.61 13.96 13.98C14.71 12.67 14.65 11.02 13.93 9.71C14.63 10.33 15.22 11.04 15.75 11.8C16.33 12.64 16.63 13.66 16.63 14.73C16.63 15.01 16.86 15.24 17.14 15.24C17.42 15.24 17.65 15.01 17.65 14.73C17.65 13.43 17.18 12.18 17.66 11.2Z"/></svg>
+                            <div class="book-title">Atomic Habits</div>
+                        </div>
+                        <div class="book-author">James Clear</div>
+                    </div>
+                    <div class="card-right">
+                        <div class="info-row">
+                            <svg class="info-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                            <div><span class="info-label">SUMMARY:</span> A proven framework for improving every day through tiny, consistent changes.</div>
+                        </div>
+                        <div class="info-row">
+                            <svg class="info-icon" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+                            <div><span class="info-label">LEARNINGS:</span> Emphasized building robust systems rather than setting distant goals, allowing habits to compound naturally over time.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reading-card interactive">
+                    <div class="card-left">
+                        <div class="book-title-group">
+                            <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+                            <div class="book-title">The Psychology of Money</div>
+                        </div>
+                        <div class="book-author">Morgan Housel</div>
+                    </div>
+                    <div class="card-right">
+                        <div class="info-row">
+                            <svg class="info-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                            <div><span class="info-label">SUMMARY:</span> Timeless lessons on wealth, greed, and happiness, exploring the strange ways people think about and handle money.</div>
+                        </div>
+                        <div class="info-row">
+                            <svg class="info-icon" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+                            <div><span class="info-label">LEARNINGS:</span> Realized that financial success is less about hard science and what you know, and almost entirely about human behavior and managing emotions.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reading-card interactive">
+                    <div class="card-left">
+                        <div class="book-title-group">
+                            <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+                            <div class="book-title">The Intelligent Investor</div>
+                        </div>
+                        <div class="book-author">Benjamin Graham</div>
+                    </div>
+                    <div class="card-right">
+                        <div class="info-row">
+                            <svg class="info-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                            <div><span class="info-label">SUMMARY:</span> The definitive and foundational text on value investing, teaching how to analyze long-term stock value and minimize economic risks.</div>
+                        </div>
+                        <div class="info-row">
+                            <svg class="info-icon" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+                            <div><span class="info-label">LEARNINGS:</span> Internalized the concept of the "margin of safety" and the importance of ignoring short-term market noise in favor of deep, fundamental value.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reading-card interactive">
+                    <div class="card-left">
+                        <div class="book-title-group">
+                            <svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg>
+                            <div class="book-title">A Random Walk Down Wall Street</div>
+                        </div>
+                        <div class="book-author">Burton G. Malkiel</div>
+                    </div>
+                    <div class="card-right">
+                        <div class="info-row">
+                            <svg class="info-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                            <div><span class="info-label">SUMMARY:</span> A no-nonsense guide to investing that argues for the efficient-market hypothesis and the superiority of passive index funding.</div>
+                        </div>
+                        <div class="info-row">
+                            <svg class="info-icon" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+                            <div><span class="info-label">LEARNINGS:</span> Understood that broad-based index funds generally outperform actively managed portfolios over the long run, saving both time and management fees.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reading-card interactive">
+                    <div class="card-left">
+                        <div class="book-title-group">
+                            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                            <div class="book-title">It Ends with Us</div>
+                        </div>
+                        <div class="book-author">Colleen Hoover</div>
+                    </div>
+                    <div class="card-right">
+                        <div class="info-row">
+                            <svg class="info-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                            <div><span class="info-label">SUMMARY:</span> A powerful and deeply personal story about love, resilience, and the difficult choices involved in breaking cycles of abuse.</div>
+                        </div>
+                        <div class="info-row">
+                            <svg class="info-icon" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+                            <div><span class="info-label">LEARNINGS:</span> Gained profound empathy for people navigating complex, painful emotional situations and realized the immense strength required to make the right choice, even when it hurts.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reading-card interactive">
+                    <div class="card-left">
+                        <div class="book-title-group">
+                            <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+                            <div class="book-title">November 9</div>
+                        </div>
+                        <div class="book-author">Colleen Hoover</div>
+                    </div>
+                    <div class="card-right">
+                        <div class="info-row">
+                            <svg class="info-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                            <div><span class="info-label">SUMMARY:</span> An emotional novel about a writer and his unlikely muse who agree to meet on the same date every year for five consecutive years.</div>
+                        </div>
+                        <div class="info-row">
+                            <svg class="info-icon" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+                            <div><span class="info-label">LEARNINGS:</span> Explored themes of destiny, forgiveness, and the idea that true connection allows both individuals to independently grow into their own potential.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <footer>
+            <div class="footer-contacts">
+                <a href="tel:+919417248339" class="contact-link">+91 9417248339</a>
+                <span class="separator">|</span>
+                <a href="mailto:divyakiranprofessional@gmail.com" class="contact-link">divyakiranprofessional@gmail.com</a>
+                <span class="separator">|</span>
+                <a href="https://www.instagram.com/nomadic.dev_2601/" target="_blank" class="contact-link" aria-label="Instagram">
+                    <svg viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.4 5.6 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.6 18.4 4 16.4 4H7.6zm9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25zM12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
+                </a>
+                <a href="https://github.com/Divyakiran-create" target="_blank" class="contact-link" aria-label="GitHub">
+                    <svg viewBox="0 0 24 24"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                </a>
+                <a href="https://www.linkedin.com/in/divyakiran-sahoo-1595402b7" target="_blank" class="contact-link" aria-label="LinkedIn">
+                    <svg viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                </a>
+            </div>
+
+            <div class="copyright">
+                © 2026 Divyakiran Sahoo. All rights reserved.
+            </div>
+        </footer>
+    </div> <script>
+        /* --- LOADER LOGIC --- */
+        window.onload = () => {
+            setTimeout(() => {
+                const loader = document.getElementById('readings-loader');
+                const content = document.getElementById('content-wrapper');
+                
+                // Fade out loader
+                loader.style.opacity = '0';
+                
+                setTimeout(() => {
+                    // Hide loader completely and show content
+                    loader.style.display = 'none';
+                    content.classList.add('visible');
+                }, 600); // Wait for fade out transition
+                
+            }, 1800); // Show the book animation for 1.8 seconds before transitioning
+        };
+
+        /* --- NAVIGATION LOGIC --- */
+        function goHome() {
+            const content = document.getElementById('content-wrapper');
+            content.style.opacity = '0'; // Fade out wrapper
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 800);
+        }
+
+        function goToAbout() {
+            const content = document.getElementById('content-wrapper');
+            content.style.opacity = '0'; // Fade out wrapper
+            setTimeout(() => {
+                window.location.href = 'about.html';
+            }, 800);
+        }
+
+        // Click Listeners
+        document.getElementById('esc-button').addEventListener('click', goHome);
+        document.getElementById('nav-home').addEventListener('click', (e) => {
+            e.preventDefault();
+            goHome();
+        });
+        document.getElementById('nav-about').addEventListener('click', (e) => {
+            e.preventDefault();
+            goToAbout();
+        });
+
+        // Keyboard Shortcuts Listeners
+        document.addEventListener('keydown', (e) => {
+            const isCmdOrCtrl = e.metaKey || e.ctrlKey;
+            
+            if (e.key === 'Escape') { goHome(); }
+            if (isCmdOrCtrl && e.key.toLowerCase() === 'h') { e.preventDefault(); goHome(); }
+            if (isCmdOrCtrl && e.key.toLowerCase() === 'i') { e.preventDefault(); goToAbout(); }
+        });
+
+        /* --- CURSOR LOGIC --- */
+        const customCursor = document.getElementById('custom-cursor');
+        const interactiveElements = document.querySelectorAll('.interactive, a');
+
+        document.addEventListener('mousemove', (e) => {
+            customCursor.style.left = e.clientX + 'px';
+            customCursor.style.top = e.clientY + 'px';
+        });
+
+        document.addEventListener('mousedown', () => customCursor.classList.add('clicked'));
+        document.addEventListener('mouseup', () => customCursor.classList.remove('clicked'));
+
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => customCursor.classList.add('hovered'));
+            el.addEventListener('mouseleave', () => customCursor.classList.remove('hovered'));
+        });
+    </script>
+</body>
+</html>

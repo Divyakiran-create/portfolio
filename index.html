@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Divyakiran Sahoo - Portfolio</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- RESET & BASE STYLES --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: none; /* HIDE DEFAULT CURSOR */
+        }
+
+        body {
+            /* YOUR PHOTO BACKGROUND */
+            background-image: url('assets/IMG_3041.PNG');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* DARK OVERLAY */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); 
+            z-index: -1; 
+        }
+
+        /* --- CUSTOM CURSOR --- */
+        #custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            border: 1.5px solid #ffffff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            transition: transform 0.1s ease, width 0.2s ease, height 0.2s ease;
+        }
+
+        #custom-cursor.hovered {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: transparent;
+        }
+
+        #custom-cursor.clicked {
+            transform: translate(-50%, -50%) scale(0.8);
+        }
+
+        /* --- LOADER STYLES --- */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 15vw;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+
+        #terminal-content {
+            font-family: 'Courier New', monospace;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .boot-line {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .name-line {
+            margin-top: 25px;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #fff;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            min-height: 3.5rem;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 12px;
+            height: 40px;
+            background-color: #fff;
+            margin-left: 8px;
+            animation: blink 1s step-end infinite;
+        }
+
+        .cursor.small {
+            height: 14px;
+            width: 8px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* --- MAIN CONTENT --- */
+        header {
+            padding: 30px 40px; /* Adjusted padding */
+            height: 15vh;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        /* TEXT LOGO STYLING */
+        .text-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            user-select: none;
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 60px;
+            opacity: 0; 
+            transform: scale(0.95);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        main.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .box {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background-color: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+        
+        .box:hover {
+            border-color: #fff;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .active-state {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border-color: #ffffff !important;
+        }
+
+        .vertical-separator {
+            width: 1px;
+            height: 250px;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .latest-blog-area {
+            width: 300px;
+            height: 250px;
+            flex-direction: column;
+            padding: 20px;
+            text-align: center;
+            justify-content: space-between; 
+        }
+
+        .blog-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+        }
+
+        .read-more-btn {
+            font-size: 0.8rem;
+            border: 1px solid #aaa;
+            padding: 5px 10px;
+            margin-top: 10px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .box:hover .read-more-btn {
+            border-color: #fff;
+            background-color: #fff;
+            color: #000;
+        }
+
+        .nav-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .nav-item {
+            width: 250px;
+            height: 60px;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .shortcut-hint {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-left: 10px;
+            border: 1px solid #777;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* --- FOOTER STYLES --- */
+        footer {
+            height: 10vh;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: 1px solid #333;
+            flex-direction: row; 
+            gap: 25px; 
+            padding: 0 20px;
+            font-size: 0.85rem;
+            white-space: nowrap; 
+            overflow-x: auto; 
+        }
+
+        .contact-item {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px; 
+        }
+
+        .contact-item:hover {
+            color: #fff;
+            text-shadow: 0 0 5px rgba(255,255,255,0.5);
+        }
+
+        .contact-item svg {
+            width: 18px;
+            height: 18px;
+            fill: #ccc;
+            transition: fill 0.3s;
+        }
+
+        .contact-item:hover svg {
+            fill: #fff;
+        }
+
+        .separator {
+            color: #555;
+            font-weight: lighter;
+            margin-top: -2px; 
+        }
+
+        .certification-text {
+            color: #777;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        /* --- MOBILE OPTIMIZATIONS --- */
+        @media (max-width: 900px) {
+            header {
+                height: auto;
+                justify-content: center;
+                padding: 20px;
+            }
+            main {
+                flex-direction: column;
+                gap: 30px;
+            }
+            .vertical-separator {
+                width: 80%;
+                height: 1px;
+            }
+            .name-line {
+                font-size: 2rem;
+            }
+            #loader {
+                padding-left: 5vw;
+                padding-right: 5vw;
+            }
+            footer {
+                flex-direction: column; /* Changed to stack vertically */
+                justify-content: center;
+                height: auto;
+                padding: 25px 15px;
+                gap: 15px;
+                white-space: normal;
+            }
+            .separator {
+                display: none; /* Hide separators on mobile */
+            }
+        }
+
+        /* --- TOUCH DEVICE CURSOR FIX --- */
+        @media (hover: none) and (pointer: coarse) {
+            * { cursor: auto !important; }
+            #custom-cursor { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <div id="loader">
+        <div id="terminal-content"></div>
+        <div class="cursor small" id="main-cursor"></div>
+    </div>
+
+    <header>
+        <div class="text-logo">&lt;DIVYAKIRAN/&gt;</div>
+    </header>
+
+    <main id="main-content">
+        <div class="box latest-blog-area" id="latest-blog-trigger">
+            <div class="blog-content">
+                <h3>Currently Reading</h3>
+                <p style="font-size: 1rem; margin-top: 10px; color: #ccc;">Data Mining : Concepts and Techniques
+                </p>
+                <p style="font-family: 'Allura', cursive; font-size: 1rem; margin-top: 10px; color: #fff;">Jiawei Han</p>
+            </div>
+        </div>
+
+        <div class="vertical-separator"></div>
+
+        <div class="nav-stack">
+            <div class="box nav-item" id="about-section">
+                <span>ABOUT ME</span>
+                <span class="shortcut-hint">⌘I</span>
+            </div>
+            <div class="box nav-item" id="projects-section">
+                <span>PROJECTS</span>
+                <span class="shortcut-hint">⌘P</span>
+            </div>
+            <div class="box nav-item" id="readings-section">
+                <span>MY READINGS</span>
+                <span class="shortcut-hint">⌘B</span> </div>
+        </div>
+    </main>
+
+    <footer>
+        <a href="tel:+919417248339" class="contact-item">+91 9417248339</a>
+        <span class="separator">|</span>
+        <a href="mailto:divyakiranprofessional@gmail.com" class="contact-item">divyakiranprofessional@gmail.com</a>
+        <span class="separator">|</span>
+        <a href="https://github.com/Divyakiran-create" target="_blank" class="contact-item">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+            GitHub
+        </a>
+        <span class="separator">|</span>
+        <a href="https://www.linkedin.com/in/divyakiran-sahoo-1595402b7" target="_blank" class="contact-item">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+            LinkedIn
+        </a>
+        <span class="separator">|</span>
+        <span class="certification-text">© 2026 Divyakiran Sahoo</span>
+    </footer>
+
+    <script>
+        /* --- CURSOR LOGIC --- */
+        const customCursor = document.getElementById('custom-cursor');
+        const interactiveElements = document.querySelectorAll('.box, a, button, img');
+
+        document.addEventListener('mousemove', (e) => {
+            customCursor.style.left = e.clientX + 'px';
+            customCursor.style.top = e.clientY + 'px';
+        });
+        document.addEventListener('mousedown', () => customCursor.classList.add('clicked'));
+        document.addEventListener('mouseup', () => customCursor.classList.remove('clicked'));
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => customCursor.classList.add('hovered'));
+            el.addEventListener('mouseleave', () => customCursor.classList.remove('hovered'));
+        });
+
+
+        /* --- BOOT SEQUENCE LOGIC --- */
+        const bootLines = [
+            "INITIALIZING KERNEL...", "LOADING MEMORY ADDRESS 0x004F2A...", 
+            "CHECKING CPU REGISTERS... OK", "MOUNTING FILE SYSTEM...", 
+            "LOADING ASSETS...", "VERIFYING INTEGRITY...", 
+            "ACCESS GRANTED.", "---------------------------"
+        ];
+        const finalName = "<DIVYAKIRAN/>";
+        const terminalContent = document.getElementById('terminal-content');
+        const loader = document.getElementById('loader');
+        const mainContent = document.getElementById('main-content');
+        const mainCursor = document.getElementById('main-cursor');
+        let lineIndex = 0;
+
+        function runBootSequence() {
+            if (lineIndex < bootLines.length) {
+                const p = document.createElement('div');
+                p.classList.add('boot-line');
+                p.innerText = bootLines[lineIndex];
+                terminalContent.appendChild(p);
+                lineIndex++;
+                let delay = Math.random() * 100 + 50; 
+                if (bootLines[lineIndex-1].includes("LOADING")) delay = 350;
+                setTimeout(runBootSequence, delay);
+            } else {
+                setTimeout(prepareNameTyping, 500);
+            }
+        }
+
+        function prepareNameTyping() {
+            mainCursor.style.display = 'none';
+            const nameContainer = document.createElement('div');
+            nameContainer.classList.add('name-line');
+            const nameSpan = document.createElement('span');
+            nameSpan.id = 'name-text';
+            const bigCursor = document.createElement('span');
+            bigCursor.classList.add('cursor');
+            nameContainer.appendChild(nameSpan);
+            nameContainer.appendChild(bigCursor);
+            terminalContent.appendChild(nameContainer);
+            typeWriter(nameSpan, finalName, 0);
+        }
+
+        function typeWriter(element, text, index) {
+            if (index < text.length) {
+                element.innerHTML += text.charAt(index);
+                setTimeout(() => typeWriter(element, text, index + 1), Math.random() * 50 + 50);
+            } else {
+                setTimeout(finishBoot, 800);
+            }
+        }
+
+        function finishBoot() {
+            sessionStorage.setItem('boot_sequence_played', 'true');
+            loader.style.opacity = '0';
+            loader.style.visibility = 'hidden'; 
+            setTimeout(() => { mainContent.classList.add('visible'); }, 100); 
+            setTimeout(() => { loader.style.display = 'none'; }, 1000);
+        }
+
+        function skipBootSequence() {
+            loader.style.display = 'none';
+            mainContent.classList.add('visible');
+        }
+
+        window.onload = function() {
+            if (sessionStorage.getItem('boot_sequence_played') === 'true') {
+                skipBootSequence();
+            } else {
+                setTimeout(runBootSequence, 300);
+            }
+        };
+
+
+        /* --- NAVIGATION --- */
+        const aboutSection = document.getElementById('about-section');
+        const projectsSection = document.getElementById('projects-section');
+        const readingsSection = document.getElementById('readings-section');
+        const latestBlogSection = document.getElementById('latest-blog-trigger');
+
+        function triggerAction(element, actionName) {
+            if (!element) return;
+            element.classList.add('active-state');
+            setTimeout(() => {
+                element.classList.remove('active-state');
+                
+                // --- NAVIGATION LOGIC ---
+                if (actionName === 'About Me') {
+                    window.location.href = 'about.html';
+                }
+                if (actionName === 'Projects') {
+                    window.location.href = 'projects.html';
+                }
+                if (actionName === 'My Readings') {
+                    window.location.href = 'readings.html';
+                }
+            }, 300);
+        }
+
+        aboutSection.addEventListener('click', () => triggerAction(aboutSection, 'About Me'));
+        projectsSection.addEventListener('click', () => triggerAction(projectsSection, 'Projects'));
+        readingsSection.addEventListener('click', () => triggerAction(readingsSection, 'My Readings'));
+        latestBlogSection.addEventListener('click', () => triggerAction(latestBlogSection, 'Read More (Latest Blog)'));
+
+        document.addEventListener('keydown', (e) => {
+            const isCmdOrCtrl = e.metaKey || e.ctrlKey;
+            const isShift = e.shiftKey;
+
+            if (isCmdOrCtrl) {
+                if (isShift && e.key.toLowerCase() === 'b') {
+                    e.preventDefault();
+                    triggerAction(latestBlogSection, 'Read More (Latest Blog)');
+                    return;
+                }
+                if (e.key.toLowerCase() === 'i') {
+                    e.preventDefault(); 
+                    triggerAction(aboutSection, 'About Me');
+                }
+                if (e.key.toLowerCase() === 'p') {
+                    e.preventDefault(); 
+                    triggerAction(projectsSection, 'Projects');
+                }
+                if (!isShift && e.key.toLowerCase() === 'b') { 
+                    e.preventDefault(); 
+                    triggerAction(readingsSection, 'My Readings');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

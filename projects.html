@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - Divyakiran Sahoo</title>
+    <style>
+        /* --- RESET & BASE --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: none;
+        }
+
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- CUSTOM CURSOR --- */
+        #custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            transition: transform 0.1s, width 0.2s, height 0.2s;
+        }
+        #custom-cursor.hovered { width: 60px; height: 60px; }
+        #custom-cursor.clicked { transform: translate(-50%, -50%) scale(0.8); }
+
+        /* --- LOADER --- */
+        #project-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .loader-text {
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 300px;
+            height: 2px;
+            background-color: #333;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #fff;
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        #main-container {
+            opacity: 0;
+            transition: opacity 0.8s ease-in;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            overflow-y: auto;
+        }
+        #main-container.visible { opacity: 1; }
+
+        /* Custom Scrollbar for Main Container */
+        #main-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        #main-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #main-container::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 10px;
+        }
+        #main-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* --- HEADER SECTION --- */
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 30px; 
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        /* Glitch Effect on Title */
+        .page-title::before {
+            content: "PROJECTS_LOG";
+            position: absolute;
+            left: 2px;
+            text-shadow: -1px 0 red;
+            top: 0;
+            color: white;
+            background: #050505;
+            overflow: hidden;
+            clip: rect(0, 900px, 0, 0);
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(40px, 9999px, 44px, 0); }
+            5% { clip: rect(10px, 9999px, 80px, 0); }
+            100% { clip: rect(0, 9999px, 0, 0); }
+        }
+
+        .status-badge {
+            border: 1px solid #fff;
+            padding: 5px 15px;
+            font-size: 0.8rem;
+            background: #111;
+            color: #ffaa00; /* Amber warning color */
+            border-color: #ffaa00;
+        }
+
+        .blinking-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #ffaa00; 
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* --- UPDATION / MAINTENANCE BANNER --- */
+        .maintenance-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .maintenance-box {
+            border: 1px dashed #ffaa00;
+            background-color: rgba(255, 170, 0, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
+            text-align: center;
+            width: 100%;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.3s ease;
+        }
+
+        .maintenance-box:hover {
+            background-color: rgba(255, 170, 0, 0.1);
+        }
+
+        .maintenance-content {
+            display: flex;
+            align-items: center;
+            text-align: left;
+            gap: 20px;
+        }
+
+        .warning-icon {
+            color: #ffaa00;
+            display: flex;
+            align-items: center;
+        }
+
+        .maintenance-text h2 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            color: #ffaa00;
+        }
+
+        .maintenance-text p {
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+
+        .terminal-status {
+            font-size: 0.8rem;
+            color: #ffaa00; 
+            background: #111;
+            padding: 8px 15px;
+            border-radius: 4px;
+            display: inline-block;
+            border: 1px solid #333;
+            white-space: nowrap;
+        }
+
+        .blink-cursor {
+            display: inline-block;
+            width: 6px;
+            height: 12px;
+            background-color: #ffaa00;
+            vertical-align: middle;
+            margin-left: 5px;
+            animation: pulse 1s infinite;
+        }
+
+        /* --- PROJECT GRID --- */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding-bottom: 50px;
+        }
+
+        .project-card {
+            border: 1px solid #333;
+            background-color: rgba(255, 255, 255, 0.02);
+            /* Changed from fixed height to min-height to prevent text from overflowing/clipping */
+            min-height: 250px; 
+            height: auto;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card:hover {
+            border-color: #fff;
+            background-color: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #777;
+            margin-bottom: 15px;
+        }
+
+        /* Adding flex-grow so the footer stays cleanly at the bottom if the cards stretch */
+        .card-content {
+            flex-grow: 1;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: #aaa;
+            line-height: 1.4;
+        }
+
+        .card-footer {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            margin-top: auto; /* Pushes the footer to the very bottom */
+        }
+
+        .card-footer.wip {
+            color: #ffaa00;
+        }
+
+        .arrow { margin-left: 10px; transition: margin-left 0.2s; }
+        .project-card:hover .arrow { margin-left: 20px; }
+
+        /* --- ESC BUTTON --- */
+        #esc-button {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 60px;
+            height: 60px;
+            background-color: #000;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            z-index: 100;
+            transition: transform 0.2s;
+        }
+        #esc-button:hover { transform: scale(1.1); background: #222; }
+
+        /* --- MOBILE OPTIMIZATIONS --- */
+        @media (max-width: 900px) {
+            .maintenance-box {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            .maintenance-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-section { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .page-title { font-size: 2rem; }
+            .page-title::before { clip: rect(0, 900px, 0, 0); }
+            #main-container { padding: 20px; }
+            #esc-button { bottom: 20px; right: 20px; width: 50px; height: 50px; }
+        }
+
+        /* --- TOUCH DEVICE CURSOR FIX --- */
+        @media (hover: none) and (pointer: coarse) {
+            * { cursor: auto !important; }
+            #custom-cursor { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <div id="project-loader">
+        <div class="loader-text">SCANNING REPOSITORIES...</div>
+        <div class="progress-bar"><div class="progress-fill" id="fill"></div></div>
+    </div>
+
+    <div id="main-container">
+        
+        <header class="header-section">
+            <div class="page-title">PROJECTS_LOG</div>
+            <div class="status-badge">
+                <span class="blinking-dot"></span> UNDER UPDATION
+            </div>
+        </header>
+
+        <div class="maintenance-container">
+            <div class="maintenance-box interactive">
+                <div class="maintenance-content">
+                    <div class="warning-icon">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="maintenance-text">
+                        <h2>SYSTEM_UPDATE_IN_PROGRESS</h2>
+                        <p>Detailed case studies and architectures for the upcoming projects below are currently being compiled and deployed.</p>
+                    </div>
+                </div>
+                <div class="terminal-status">
+                    > COMPILING_NODES <span class="blink-cursor"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="project-grid">
+            
+            <div class="project-card interactive">
+                <div class="card-header">
+                    <span>ID: #001</span>
+                    <span>AI / ML</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">DestinAItion</div>
+                    <div class="card-desc">A Smart AI Travel Planner designed to curate personalized itineraries, optimize routes, and enhance the travel experience using machine learning.</div>
+                </div>
+                <div class="card-footer wip">
+                    Status: In Development <span class="arrow">→</span>
+                </div>
+            </div>
+
+            <div class="project-card interactive">
+                <div class="card-header">
+                    <span>ID: #002</span>
+                    <span>Agritech / App</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">Krishi Pradhan</div>
+                    <div class="card-desc">A comprehensive Farm Management Service App aimed at bridging the gap between technology and traditional farming to optimize crop yield and resources.</div>
+                </div>
+                <div class="card-footer wip">
+                    Status: In Development <span class="arrow">→</span>
+                </div>
+            </div>
+
+            <div class="project-card interactive">
+                <div class="card-header">
+                    <span>ID: #003</span>
+                    <span>Game Dev</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">Cricket 07 Remastered</div>
+                    <div class="card-desc">A passion project aimed at modernizing the classic Cricket 07 game with updated mechanics, graphics, and physics while retaining the nostalgic feel.</div>
+                </div>
+                <div class="card-footer wip">
+                    Status: In Development <span class="arrow">→</span>
+                </div>
+            </div>
+
+            <div class="project-card interactive">
+                <div class="card-header">
+                    <span>ID: #004</span>
+                    <span>Reinforcement Learning</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">Checkers AI</div>
+                    <div class="card-desc">An intelligent Checkers agent trained using advanced Reinforcement Learning algorithms to predict opponent moves and strategize gameplay.</div>
+                </div>
+                <div class="card-footer wip">
+                    Status: In Development <span class="arrow">→</span>
+                </div>
+            </div>
+
+            <div class="project-card interactive">
+                <div class="card-header">
+                    <span>ID: #005</span>
+                    <span>NLP / ML</span>
+                </div>
+                <div class="card-content">
+                    <div class="card-title">Sentiment Analyzer</div>
+                    <div class="card-desc">A natural language processing tool built to scrape and analyze sentiments from product reviews and social media to determine public perception.</div>
+                </div>
+                <div class="card-footer wip">
+                    Status: In Development <span class="arrow">→</span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="esc-button" class="interactive" title="Go Back">ESC</div>
+
+    <script>
+        /* --- CURSOR LOGIC --- */
+        const customCursor = document.getElementById('custom-cursor');
+        const interactiveElements = document.querySelectorAll('.interactive, a, .project-card, .maintenance-box');
+
+        document.addEventListener('mousemove', (e) => {
+            customCursor.style.left = e.clientX + 'px';
+            customCursor.style.top = e.clientY + 'px';
+        });
+
+        document.addEventListener('mousedown', () => customCursor.classList.add('clicked'));
+        document.addEventListener('mouseup', () => customCursor.classList.remove('clicked'));
+
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => customCursor.classList.add('hovered'));
+            el.addEventListener('mouseleave', () => customCursor.classList.remove('hovered'));
+        });
+
+        /* --- LOADER LOGIC --- */
+        const fill = document.getElementById('fill');
+        const loader = document.getElementById('project-loader');
+        const container = document.getElementById('main-container');
+
+        let width = 0;
+        function loadBar() {
+            if (width >= 100) {
+                // Loading Complete
+                setTimeout(() => {
+                    loader.style.opacity = '0';
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                        container.classList.add('visible');
+                    }, 500);
+                }, 300);
+            } else {
+                width += Math.random() * 5; // Random speed
+                if(width > 100) width = 100;
+                fill.style.width = width + '%';
+                requestAnimationFrame(loadBar);
+            }
+        }
+
+        window.onload = function() {
+            setTimeout(loadBar, 300);
+        };
+
+        /* --- NAVIGATION --- */
+        const escBtn = document.getElementById('esc-button');
+
+        function goBack() {
+            container.style.opacity = '0'; // Fade out
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 800);
+        }
+
+        escBtn.addEventListener('click', goBack);
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'Escape') goBack();
+        });
+    </script>
+</body>
+</html>

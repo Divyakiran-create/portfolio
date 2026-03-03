@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Me - Divyakiran Sahoo</title>
+    <style>
+        /* --- RESET --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            cursor: none; 
+        }
+
+        body {
+            background-color: #000000;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        h1, h2, h3, .tech-item {
+             font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* --- CURSOR --- */
+        #custom-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference; 
+            transition: transform 0.1s ease, width 0.2s ease, height 0.2s ease;
+        }
+        #custom-cursor.hovered { width: 50px; height: 50px; }
+        #custom-cursor.clicked { transform: translate(-50%, -50%) scale(0.8); }
+
+        /* --- LOADER OVERLAY (New Terminal Theme) --- */
+        #about-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease-out;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .terminal-loader-container {
+            width: 100%;
+            max-width: 450px;
+            text-align: left;
+            padding: 20px;
+        }
+
+        .cmd-text {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .cmd-prompt {
+            color: #fff; /* Changed to white */
+            margin-right: 12px;
+        }
+
+        .system-response {
+            font-size: 1rem;
+            color: #888;
+            min-height: 3rem;
+            line-height: 1.5;
+        }
+        
+        /* --- MAIN CONTAINER --- */
+        .main-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            opacity: 0; 
+            transition: opacity 1s ease-in;
+        }
+        .main-container.visible { opacity: 1; }
+
+        /* --- LEFT PANE --- */
+        .left-pane {
+            flex: 6;
+            background-color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 30px;
+        }
+
+        /* ESC BUTTON */
+        #esc-button {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            width: 60px;
+            height: 60px;
+            background-color: #000000;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #ffffff; 
+            font-size: 0.9rem;
+            z-index: 100;
+            transition: transform 0.2s ease, background-color 0.2s;
+        }
+
+        #esc-button:hover {
+            transform: scale(1.1);
+            background-color: #222;
+        }
+
+        /* CONTENT BOX */
+        .content-box {
+            background-color: #000000; 
+            border: 2px solid #ffffff; 
+            width: 100%;
+            max-width: 800px;
+            height: 85%;
+            border-radius: 40px;
+            padding: 50px;
+            color: #ffffff;
+            overflow-y: auto;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .content-box::-webkit-scrollbar { width: 6px; }
+        .content-box::-webkit-scrollbar-track { background: transparent; margin: 40px 0; }
+        .content-box::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .content-box::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        .content-box h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #fff;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        .content-section { margin-bottom: 40px; }
+        .content-section h2 { font-size: 1.5rem; margin-bottom: 15px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .content-section h3 { font-size: 1rem; margin-top: 25px; margin-bottom: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        .content-section p { font-size: 1.1rem; line-height: 1.6; margin-bottom: 15px; color: #ddd; }
+        
+        /* List style for Certifications */
+        .cert-list { list-style: none; padding: 0; }
+        .cert-list li { margin-bottom: 10px; color: #ddd; font-size: 1.05rem; display: flex; align-items: center; }
+        .cert-list li::before { content: "▹"; color: #fff; margin-right: 10px; }
+        
+        .cert-list a { color: #ddd; text-decoration: none; border-bottom: 1px dashed #777; transition: all 0.2s ease; }
+        .cert-list a:hover { color: #fff; border-bottom: 1px solid #fff; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tech-item {
+            background-color: #111; border: 1px solid #333; color: #fff; padding: 8px; text-align: center; border-radius: 6px; font-size: 0.85rem; transition: border-color 0.2s;
+        }
+        .tech-item:hover { border-color: #fff; }
+
+        /* --- BENTO GRID & FLASHCARDS (EXPERIENCE) --- */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .bento-card {
+            background-color: transparent;
+            perspective: 1000px; 
+            height: 160px;
+        }
+
+        .bento-card.highlight {
+            grid-column: span 2; 
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .bento-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #0a0a0a;
+            transition: border-color 0.3s;
+        }
+
+        .bento-card.highlight .flip-card-front {
+            background: linear-gradient(145deg, #111, #1a1a1a);
+            border: 1px solid #555;
+        }
+
+        .bento-card:hover .flip-card-front, .bento-card:hover .flip-card-back {
+            border-color: #fff;
+        }
+
+        .flip-card-back {
+            transform: rotateY(180deg);
+            background-color: #111;
+            color: #ccc;
+            font-size: 0.95rem;
+            padding: 20px 30px;
+        }
+
+        .role-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .bento-card.highlight .role-title {
+            font-size: 1.3rem;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .club-name {
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .role-duration {
+            font-size: 0.75rem;
+            color: #666;
+            font-family: 'Courier New', monospace;
+            background: #222;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        /* --- RIGHT PANE --- */
+        .right-pane {
+            flex: 4;
+            background-color: #1a1a1a;
+            position: relative;
+            overflow: hidden;
+            user-select: none; 
+            -webkit-user-select: none;
+        }
+
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            pointer-events: none; 
+            -webkit-user-drag: none; 
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* --- MOBILE OPTIMIZATIONS --- */
+        @media (max-width: 900px) {
+            body { overflow-y: auto; overflow-x: hidden; height: auto; }
+            .main-container { flex-direction: column; height: auto; opacity: 1; }
+            .left-pane { height: auto; padding: 70px 20px 20px; flex: none; }
+            .right-pane { height: 50vh; flex: none; }
+            .content-box { height: auto; max-height: none; padding: 25px; border-radius: 25px; }
+            #esc-button { top: 15px; left: 15px; z-index: 101; position: fixed; width: 50px; height: 50px; font-size: 0.8rem; }
+            .bento-grid { grid-template-columns: 1fr; }
+            .bento-card.highlight { grid-column: span 1; }
+        }
+
+        /* --- TOUCH DEVICE CURSOR FIX --- */
+        @media (hover: none) and (pointer: coarse) {
+            * { cursor: auto !important; }
+            #custom-cursor { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="custom-cursor"></div>
+
+    <div id="about-loader">
+        <div class="terminal-loader-container">
+            <div class="cmd-text">
+                <span class="cmd-prompt">guest@portfolio:~$</span>
+                <span id="type-cmd"></span>
+                <span style="background:#fff; width:10px; height:20px; display:inline-block; animation: blink 1s infinite; margin-left: 4px;"></span>
+            </div>
+            <div class="system-response" id="sys-response"></div>
+        </div>
+    </div>
+
+    <div class="main-container" id="main-container">
+        <section class="left-pane">
+            <div id="esc-button" class="interactive" title="Go Back (Esc)">ESC</div>
+
+            <div class="content-box">
+                <h1>About Me.</h1>
+                
+                <div class="content-section">
+                    <p>Hello! I'm Divyakiran, a resident of Chandigarh, India. I am currently a pre-final year student doing my B.Tech in Computer Science and Engineering at VIT Bhopal University.</p>
+                    <p>I am developing expertise in Machine Learning and Cloud Technologies with an emphasis on scalable model deployment and distributed systems. Also, I'm advancing my problem-solving and system design skills through focused practice in Data Structures, Algorithms, and System Architecture.</p>
+                    <p>Currently open to work and open to meaningful collaborations. My portfolio provides a comprehensive overview of my projects and experience.</p>
+                </div>
+
+                <div class="content-section">
+                    <h2>Tech Stack</h2>
+                    <h3>Programming Languages</h3>
+                    <div class="tech-grid">
+                        <div class="tech-item interactive">Python</div>
+                        <div class="tech-item interactive">C++</div>
+                        <div class="tech-item interactive">Java</div>
+                        <div class="tech-item interactive">JavaScript</div>
+                        <div class="tech-item interactive">Ruby</div>
+                        <div class="tech-item interactive">R</div>
+                        <div class="tech-item interactive">SQL</div>
+                    </div>
+                    <h3>Databases</h3>
+                    <div class="tech-grid">
+                        <div class="tech-item interactive">PostgreSQL</div>
+                        <div class="tech-item interactive">Firebase</div>
+                    </div>
+                    <h3>Backend & Systems</h3>
+                    <div class="tech-grid">
+                        <div class="tech-item interactive">Flask</div>
+                        <div class="tech-item interactive">Node.js</div>
+                        <div class="tech-item interactive">REST APIs</div>
+                    </div>
+                    <h3>Version Control & DevOps</h3>
+                    <div class="tech-grid">
+                        <div class="tech-item interactive">Git</div>
+                        <div class="tech-item interactive">GitHub</div>
+                        <div class="tech-item interactive">Docker</div>
+                    </div>
+                    <h3>Cloud Platforms</h3>
+                    <div class="tech-grid">
+                        <div class="tech-item interactive">AWS</div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h2>Certifications</h2>
+                    <ul class="cert-list">
+                        <li>
+                            <a href="https://www.credly.com/badges/b18be1b4-e07b-45f8-a30f-94740a661111/public_url" target="_blank" class="interactive">Google IT Support Certificate</a>
+                        </li>
+                        <li>
+                            <a href="https://www.credly.com/badges/cc8c02c5-2cbd-407d-a337-1c2a5e3b635d/public_url" target="_blank" class="interactive">Machine Learning with Python (IBM)</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="content-section">
+                    <h2>Experience</h2>
+                    <div class="bento-grid">
+                        <div class="bento-card highlight interactive" onclick="this.classList.toggle('flipped')">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">
+                                    <div class="role-title">Technical Lead</div>
+                                    <div class="club-name">Feedbox College Clubs @ VIT Bhopal</div>
+                                    <div class="role-duration">July 2025 – September 2025</div>
+                                </div>
+                                <div class="flip-card-back">
+                                    <p>Spearheaded technical development and strategy. Led a team to organize tech events, manage workflows, and build out infrastructure for the club.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bento-card interactive" onclick="this.classList.toggle('flipped')">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">
+                                    <div class="role-title">Videography Co-Lead</div>
+                                    <div class="club-name">Agentic Intelligence Club</div>
+                                    <div class="role-duration">Jan 2026 – Present</div>
+                                </div>
+                                <div class="flip-card-back">
+                                    <p>Directed and produced video content for club events, workshops, and social media outreach.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bento-card interactive" onclick="this.classList.toggle('flipped')">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">
+                                    <div class="role-title">Event Management Team</div>
+                                    <div class="club-name">The Electric Vehicle Club</div>
+                                    <div class="role-duration">Nov 2024 – Present</div>
+                                </div>
+                                <div class="flip-card-back">
+                                    <p>Coordinated logistics, managed resources, and ensured the smooth execution of EV-related events and seminars.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bento-card highlight interactive" onclick="this.classList.toggle('flipped')">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">
+                                    <div class="role-title">Student Co-ordinator</div>
+                                    <div class="club-name">Odia Club @ VIT Bhopal</div>
+                                    <div class="role-duration">July 2024 – April 2025</div>
+                                </div>
+                                <div class="flip-card-back">
+                                    <p>Organized cultural events, facilitated meetings, and managed student engagement to promote cultural heritage on campus.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h2>Upcoming Projects</h2>
+                    <p><strong>DestinAItion:</strong> Smart AI Travel Planner</p>
+                    <p><strong>Krishi Pradhan:</strong> Farm Management Service App</p>
+                    <p><strong>Cricket 07 Remastered</strong></p>
+                </div>
+            </div>
+        </section>
+
+        <section class="right-pane">
+            <img src="assets/IMG_3216.JPG" class="profile-image" alt="Divyakiran Sahoo">
+        </section>
+    </div>
+
+    <style>
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+    </style>
+
+    <script>
+        /* --- CURSOR --- */
+        const customCursor = document.getElementById('custom-cursor');
+        const interactiveElements = document.querySelectorAll('.interactive, a, button, .tech-item, .bento-card');
+        document.addEventListener('mousemove', (e) => {
+            customCursor.style.left = e.clientX + 'px';
+            customCursor.style.top = e.clientY + 'px';
+        });
+        document.addEventListener('mousedown', () => customCursor.classList.add('clicked'));
+        document.addEventListener('mouseup', () => customCursor.classList.remove('clicked'));
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => customCursor.classList.add('hovered'));
+            el.addEventListener('mouseleave', () => customCursor.classList.remove('hovered'));
+        });
+
+        /* --- TERMINAL COMMAND ANIMATION --- */
+        const cmdText = "whoami";
+        const typeCmdEl = document.getElementById('type-cmd');
+        const sysResponseEl = document.getElementById('sys-response');
+        const loaderDiv = document.getElementById('about-loader');
+        const mainDiv = document.getElementById('main-container');
+        let charIndex = 0;
+
+        function typeCommand() {
+            if (charIndex < cmdText.length) {
+                typeCmdEl.innerHTML += cmdText.charAt(charIndex);
+                charIndex++;
+                setTimeout(typeCommand, 120); // Typing speed
+            } else {
+                setTimeout(showResponse, 400); // Wait briefly before hitting enter
+            }
+        }
+
+        function showResponse() {
+            // Fake terminal output
+            sysResponseEl.innerHTML = "> Extracting profile: Divyakiran Sahoo... [OK]<br>> Loading credentials... [OK]";
+            
+            setTimeout(() => {
+                loaderDiv.style.opacity = '0';
+                setTimeout(() => {
+                    loaderDiv.style.display = 'none';
+                    mainDiv.classList.add('visible');
+                }, 800);
+            }, 1200); // Time to read output before fading out
+        }
+
+        window.onload = function() { setTimeout(typeCommand, 500); };
+
+        /* --- NAVIGATION --- */
+        const escButton = document.getElementById('esc-button');
+
+        function goHome() {
+            mainDiv.style.opacity = '0';
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 500);
+        }
+
+        escButton.addEventListener('click', goHome);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') goHome();
+        });
+    </script>
+</body>
+</html>
